@@ -24,7 +24,7 @@ app.use(cors({ origin: process.env.CLIENT_ORIGIN || '*', credentials: true }));
 app.use(express.json({ limit: '1mb' }));
 app.use(morgan('dev'));
 
-// Health
+// Health check
 app.get('/health', (req, res) => res.json({ ok: true }));
 
 // Routers
@@ -41,7 +41,6 @@ app.use('/api/notifications', require('./routes/notifications.routes'));
 setIO(io);
 
 io.on('connection', (socket) => {
-  // Optional auth to join a personal room for notifications
   socket.on('auth:identify', (token) => {
     try {
       const payload = jwt.verify(token, process.env.JWT_SECRET);
@@ -54,11 +53,11 @@ io.on('connection', (socket) => {
   socket.on('joinProject', (projectId) => {
     socket.join(`project:${projectId}`);
   });
+
   socket.on('leaveProject', (projectId) => {
     socket.leave(`project:${projectId}`);
   });
 
-  // Realtime collaborative script editing broadcast
   socket.on('script:edit', ({ projectId, scriptId, ops }) => {
     if (!projectId || !scriptId) return;
     socket.to(`project:${projectId}`).emit('script:edit', { scriptId, ops });
@@ -69,10 +68,11 @@ const PORT = process.env.PORT || 4000;
 
 (async () => {
   try {
-    await connectDB(process.env.MONGODB_URI);
-    server.listen(PORT, () => console.log(`API listening on :${PORT}`));
+    const connection = await connectDB(process.env.MONGODB_URI);
+    console.log('MongoDB esta bien conectado:', connection.name || 'default database');
+    server.listen(PORT, () => console.log(`🚀 API listening on http://localhost:${PORT}`));
   } catch (err) {
-    console.error('Failed to start server:', err.message);
+    console.error(' No conecto', err.message);
     process.exit(1);
   }
 })();

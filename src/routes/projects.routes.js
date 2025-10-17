@@ -1,4 +1,5 @@
-const router = require('express').Router();\nconst { body, param } = require('express-validator');
+const router = require('express').Router();
+const { body, param } = require('express-validator');
 const validate = require('../middleware/validate');
 const { authRequired } = require('../middleware/auth');
 const { createProject, getMyProjects, inviteMember, acceptInvitation, setLeader, getProjectById, updateProject, deleteProject } = require('../controllers/projects.controller');
